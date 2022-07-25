@@ -74,32 +74,41 @@ jobs:
             
   scan-frontend:
     docker:
-    - image: cimg/node:18.4.0
+    - image: circleci/node:13.8.0
     resource_class: medium
     steps:
     - checkout
+    - restore_cache: 
+        keys: [frontend-scan]
     - run:
         name: front-end scan
         command: |
           cd frontend
           npm install
-          npm audit fix --audit-level=critical
+          npm audit fix
           npm audit --audit-level=critical
-
+    - save_cache:
+        paths: [frontend/scan]
+        key: frontend-scan
 
   scan-backend:
     docker:
-    - image: cimg/node:18.4.0
+    - image: circleci/node:13.8.0
     resource_class: medium
     steps:
     - checkout
+    - restore_cache: 
+        keys: [backend-scan]
     - run:
         name: back-end scan
         command: |
           cd backend
           npm install
-          npm audit fix --audit-level=critical
+          npm audit fix
           npm audit --audit-level=critical
+    - save_cache:
+        paths: [backend/scan]
+        key: backend-scan
 
 workflows:
   Udapeople:
