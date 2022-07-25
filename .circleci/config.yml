@@ -78,8 +78,6 @@ jobs:
     resource_class: medium
     steps:
     - checkout
-    - restore_cache: 
-        keys: [frontend-scan]
     - run:
         name: front-end scan
         command: |
@@ -87,9 +85,7 @@ jobs:
           npm install
           npm audit fix --audit-level=critical
           npm audit --audit-level=critical
-    - save_cache:
-        paths: [frontend/scan]
-        key: frontend-scan
+
 
   scan-backend:
     docker:
@@ -97,8 +93,6 @@ jobs:
     resource_class: medium
     steps:
     - checkout
-    - restore_cache: 
-        keys: [backend-scan]
     - run:
         name: back-end scan
         command: |
@@ -106,9 +100,6 @@ jobs:
           npm install
           npm audit fix --audit-level=critical
           npm audit --audit-level=critical
-    - save_cache:
-        paths: [backend/scan]
-        key: backend-scan
 
 workflows:
   Udapeople:
