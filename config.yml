@@ -1,0 +1,214 @@
+version: 2.1
+
+commands:
+  destroy-environment:
+    description: Destroy cloudformation stacks given a workflow ID.
+    steps:
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+
+jobs:
+  build-frontend:
+    docker:
+    - image: circleci/node:13.8.0
+    resource_class: medium
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [frontend-build]
+      - run:
+          name: Build front-end
+          command: |
+            cd frontend
+            npm install
+            npm run build
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: frontend-build
+
+  build-backend:
+    docker:
+    - image: cimg/node:18.4.0
+    resource_class: medium
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Back-end build
+          command: |
+            cd backend
+            npm install
+            npm run build
+      - save_cache:
+          paths: [backend/node_modules]
+          key: backend-build
+
+  test-frontend:
+    docker:
+    - image: cimg/node:18.4.0
+    steps:
+    - checkout
+    - restore_cache: 
+        keys: [frontend-test]
+    - run:
+        name: front-end test
+        command: |
+          cd frontend
+          npm install
+          npm run test
+    - save_cache:
+        paths: [frontend/test]
+        key: frontend-test
+                
+  test-backend:
+    docker:
+    - image: cimg/node:18.4.0
+    resource_class: medium
+    steps:
+    - checkout
+    - restore_cache: 
+        keys: [backend-test]
+    - run:
+        name: back-end test
+        command: |
+          cd backend
+          npm install
+          npm run test
+    - save_cache:
+        paths: [backend/test]
+        key: backend-test
+            
+  scan-frontend:
+    docker:
+    - image: circleci/node:13.8.0
+    resource_class: medium
+    steps:
+    - checkout
+    - restore_cache: 
+        keys: [frontend-scan]
+    - run:
+        name: front-end scan
+        command: |
+          cd frontend
+          npm install
+          npm audit fix --audit-level=critical --force
+          npm audit fix --force
+          npm audit --audit-level=critical
+    - save_cache:
+        paths: [frontend/scan]
+        key: frontend-scan
+
+  scan-backend:
+    docker:
+    - image: circleci/node:13.8.0
+    resource_class: medium
+    steps:
+    - checkout
+    - restore_cache: 
+        keys: [backend-scan]
+    - run:
+        name: back-end scan
+        command: |
+          cd backend
+          npm install
+          npm audit fix --audit-level=critical --force
+          npm audit fix --force
+          npm audit --audit-level=critical
+    - save_cache:
+        paths: [backend/scan]
+        key: backend-scan
+
+  deploy-infrastructure:
+    docker:
+    -  image: amazon/aws-cli
+    resource_class: medium
+    steps:
+      - checkout
+      - run:
+          name: tar
+          command: |
+            yum -y install tar gzip
+      - run:
+          name: deploy back-end infrastructure
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/backend.yml \
+              --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udapeople
+      - run:
+          name: deploy front-end infrastructure
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udapeople      
+      - run:
+          name: Add EC2 ip to ansible inventory
+          command: |
+            echo [all] > .circleci/ansible/inventory.txt
+            aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --output text >> .circleci/ansible/inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+      - destroy-environment   
+  
+  configure-infrastructure:
+    docker:
+    - image: python:3.11-rc-alpine
+    resource_class: medium
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["c2:35:78:49:b6:bb:99:b2:2f:b1:88:34:c6:1b:6b:ca"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: dependencies
+          command: |
+            apk add --update ansible
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt configure-server.yml
+      - destroy-environment
+
+
+workflows:
+  Udapeople:
+    jobs:
+      #- build-frontend:
+          #filters:
+            #branches:
+              #only:
+                #- master
+      #- build-backend:
+          #filters:
+            #branches:
+              #only:
+                #- master
+      #- test-frontend:
+          #requires: [build-frontend]
+      #- test-backend:
+          #requires: [build-backend]
+      #- scan-backend:
+          #requires: [build-backend]
+      #- scan-frontend:
+          #requires: [build-frontend]
+      - deploy-infrastructure:
+          filters:
+            branches:
+              only:
+                - master
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
