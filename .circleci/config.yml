@@ -148,21 +148,41 @@ jobs:
               --template-file .circleci/files/frontend.yml \
               --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udapeople
-              
+              --tags project=udapeople      
       - run:
           name: Add EC2 ip to ansible inventory
           command: |
             echo [all] > .circleci/ansible/inventory.txt
             aws ec2 describe-instances \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:project,Values=udapeople" \
             --output text >> .circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
-            - project/.circleci/ansible/inventory.txt
+            - .circleci/ansible/inventory.txt
       - destroy-environment   
+  
+  configure-infrastructure:
+    docker:
+    - image: python:3.11-rc-alpine
+    resource_class: medium
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["c2:35:78:49:b6:bb:99:b2:2f:b1:88:34:c6:1b:6b:ca"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: dependencies
+          command: |
+            apk add --update ansible
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt configure-server.yml
+      - destroy-environment
+
 
 workflows:
   Udapeople:
@@ -185,4 +205,10 @@ workflows:
           #requires: [build-backend]
       #- scan-frontend:
           #requires: [build-frontend]
-      - deploy-infrastructure
+      - deploy-infrastructure:
+          filters:
+            branches:
+              only:
+                - master
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
