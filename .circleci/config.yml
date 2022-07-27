@@ -197,7 +197,7 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - /project/backend
+            - project/backend
       - destroy-environment
 
   run-migrations:
