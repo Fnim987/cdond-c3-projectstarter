@@ -196,6 +196,7 @@ jobs:
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             cd backend
             ls -a
+            cat .env
             cd ..
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
@@ -265,12 +266,12 @@ workflows:
           #requires: [build-backend]
       #- scan-frontend:
           #requires: [build-frontend]
-      #- deploy-infrastructure:
+      - deploy-infrastructure:
           #requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          #filters:
-            #branches:
-              #only:
-                #- master
+          filters:
+            branches:
+              only:
+                - master
       - configure-infrastructure
           #requires: [deploy-infrastructure]
       - run-migrations:
