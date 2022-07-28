@@ -181,7 +181,6 @@ jobs:
           name: Configure server
           command: |
             pwd
-            cat .circleci/ansible/inventory.txt
 
             echo ENVIRONMENT=production > "backend/.env"
             echo TYPEORM_CONNECTION=postgres >> "backend/.env"
@@ -195,9 +194,12 @@ jobs:
             echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+            cd backend
+            pwd
+            ls
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
-            cat "backend/.env"
+            pwd
             ls backend
       - persist_to_workspace:
           root: ~/
@@ -263,13 +265,13 @@ workflows:
           #requires: [build-backend]
       #- scan-frontend:
           #requires: [build-frontend]
-      - deploy-infrastructure:
+      #- deploy-infrastructure:
           #requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          filters:
-            branches:
-              only:
-                - master
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
+          #filters:
+            #branches:
+              #only:
+                #- master
+      - configure-infrastructure
+          #requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
