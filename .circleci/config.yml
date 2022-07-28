@@ -195,12 +195,11 @@ jobs:
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             cd backend
-            pwd
-            ls
+            ls -a
+            cd ..
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
             pwd
-            ls backend
       - persist_to_workspace:
           root: ~/
           paths:
@@ -219,6 +218,7 @@ jobs:
       - run:
           name: run migrations
           command: |
+            pwd
             echo ENVIRONMENT=production > ~/project/backend/.env 
             echo NODE_ENV=production >> ~/project/backend/.env
             echo "TYPEORM_CONNECTION = ${TYPEORM_CONNECTION}" >> ~/project/backend/.env
