@@ -187,17 +187,11 @@ jobs:
             echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
             echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
             echo NODE_ENV=production >> "backend/.env"
-            echo Version1=1 >> "backend/.env"
             echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
             echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
             echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
-            cd backend
-            ls -a
-            cat .env
-            cd ..
-            pwd
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
       - persist_to_workspace:
@@ -216,11 +210,19 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: run migrations
+          name: npm
           command: |
-            pwd
             cd backend
             npm install
+      - run:
+          name: install other dependencies
+          command: |
+            npm install typescript
+            npm --update install python3 npm    
+      - run:
+          name: run migrations
+          command: |
+            cd backend
             npm run migrations > migrations_dump.txt
             cat migrations_dump.txt
       - run:
