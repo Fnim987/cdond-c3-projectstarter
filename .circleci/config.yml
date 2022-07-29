@@ -279,13 +279,17 @@ jobs:
           command: |
             apk add --update ansible
             apk add --update curl
+      - run:
+          name: Install dependencies
+          command: |
             apk add --update nodejs
             apk add --update tar gzip
+            apk add --update npm
       - run:
           name: Deploy backend
           command: |
             cd backend
-            npm i
+            npm install
             npm run build
             cd ..
             tar -C backend -czvf artifact.tar.gz .
