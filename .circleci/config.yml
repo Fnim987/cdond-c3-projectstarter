@@ -264,6 +264,30 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-274423696396 --recursive
+      - destroy-environment
+
+  deploy-backend:
+    docker:
+    - image: python:3.11-rc-alpine
+    resource_class: medium
+    steps:
+      - checkout
+      - aws-cli/setup
+      - add_ssh_keys:
+          fingerprints: ["c2:35:78:49:b6:bb:99:b2:2f:b1:88:34:c6:1b:6b:ca"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+            apk add --update curl
+            apk add --update nodejs
+            apk add --update tar gzip
+      - run:
+          name: Deploy backend
+          command: |
+            # your code here
       # Here's where you will add some code to rollback on failure    
 
 workflows:
@@ -297,3 +321,5 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
