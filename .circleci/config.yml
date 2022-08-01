@@ -44,6 +44,8 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update curl
+            apk add --update nodejs
+            apk add --update npm
       - run:
           name: Backend smoke test.
           command: |
