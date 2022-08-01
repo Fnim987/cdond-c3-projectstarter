@@ -158,16 +158,16 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --stack-name udapeople-backend- \
-              --parameter-overrides ID="id" \
+              --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
       - run:
           name: deploy front-end infrastructure
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              --stack-name udapeople-frontend- \
-              --parameter-overrides ID="id" \
+              --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople      
       - run:
           name: Add EC2 ip to ansible inventory
@@ -277,7 +277,7 @@ jobs:
             npm install
             npm run build
             tar -vczf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-            aws s3 cp dist s3://udapeople-id --recursive
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       - destroy-environment
 
   deploy-backend:
@@ -343,7 +343,7 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            URL="https://udapeople-id.s3.amazonaws.com/index.html#/employees"
+            URL="https://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3.amazonaws.com/index.html#/employees"
             echo ${URL}
             if curl -sk ${URL} | grep "Welcome"
               then
@@ -401,26 +401,18 @@ jobs:
 workflows:
   Udapeople:
     jobs:
-      #- build-frontend
-          #filters:
-            #branches:
-              #only:
-                #- master
-      #- build-backend
-          #filters:
-            #branches:
-              #only:
-                #- master
-      #- test-frontend:
-          #requires: [build-frontend]
-      #- test-backend:
-          #requires: [build-backend]
-      #- scan-backend:
-          #requires: [build-backend]
-      #- scan-frontend:
-          #requires: [build-frontend]
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
       - deploy-infrastructure:
-          #requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
               only:
