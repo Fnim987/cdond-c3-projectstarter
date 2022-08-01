@@ -46,6 +46,8 @@ jobs:
             apk add --update curl
             apk add --update nodejs
             apk add --update npm
+      - restore_cache:
+          keys: [backend-build]
       - run:
           name: Backend smoke test.
           command: |
