@@ -277,7 +277,7 @@ jobs:
             npm install
             npm run build
             tar -vczf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+            aws s3 cp dist s3://udapeople-id --recursive
       - destroy-environment
 
   deploy-backend:
@@ -343,7 +343,7 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            URL="https://udapeople-.s3.amazonaws.com/index.html#/employees"
+            URL="https://udapeople-id.s3.amazonaws.com/index.html#/employees"
             echo ${URL}
             if curl -sk ${URL} | grep "Manage"
               then
