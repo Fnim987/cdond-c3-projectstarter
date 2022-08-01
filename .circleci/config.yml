@@ -23,12 +23,12 @@ commands:
           when: on_fail
           command: |
             SUCCESS=$(curl -k https://kvdb.io/4KLD8geH4W1m4rQhB1fkdQ/migration_${CIRCLE_WORKFLOW_ID:0:7})
-            echo SUCCESS
+            echo $SUCCESS
             if(( SUCCESS==1 )); 
             then
               cd ~/project/backend
               npm install
-              npm run migration:revert
+              npm run migrations:revert
             fi
 
 jobs:
