@@ -345,7 +345,7 @@ jobs:
           command: |
             URL="https://udapeople-id.s3.amazonaws.com/index.html#/employees"
             echo ${URL}
-            if curl -sk ${URL} | grep "Manage"
+            if curl -sk ${URL} | grep "Welcome"
               then
                 return 0
               else
