@@ -10,7 +10,7 @@
       cd /home/ubuntu/
       mkdir backend
       cd backend
-      tar -xvzf /home/ubuntu/artifact.tar.gz
+      tar -vxzf /home/ubuntu/artifact.tar.gz
       ls
       npm install
       pm2 stop default
