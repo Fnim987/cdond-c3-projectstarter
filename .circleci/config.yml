@@ -341,11 +341,6 @@ jobs:
       - checkout
       - aws-cli/setup
       - run:
-          name: Install dependencies
-          command: |
-            apk add --update curl
-            apk add --update npm
-      - run:
           name: Backend smoke test.
           command: |
             export BACKEND_IP=$(aws ec2 describe-instances \
@@ -445,6 +440,6 @@ workflows:
           #requires: [run-migrations]
       #- deploy-backend:
           #requires: [run-migrations]
-      - smoke-test
-          #requires: [deploy-backend, deploy-frontend]
+      - smoke-test:
+          requires: [run-migration]
 
