@@ -1,0 +1,9 @@
+URL1: https://github.com/Fnim987/cdond-c3-projectstarter
+
+URL2: http://udapeople-019dce9.s3.amazonaws.com/index.html#/employees
+
+URL3: http://dwx2erjy5k27t.cloudfront.net
+
+URL4: http://ec2-3-88-180-96.compute-1.amazonaws.com:3030/api/status
+
+URL5: http://ec2-54-83-180-125.compute-1.amazonaws.com:9090/targets
